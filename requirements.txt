@@ -1,0 +1,4 @@
+#Write dependecies below. They are case sensitive
+python-dotenv
+python-telegram-bot
+six
