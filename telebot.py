@@ -2,14 +2,16 @@ import os
 from dotenv import load_dotenv
 from telegram import *
 from telegram.ext import *
+import openai
 
 load_dotenv()
 
 print("Starting Bot")
-apitoken = os.getenv("API_KEY")
+apitoken = os.getenv("GPT_KEY")
+openai.api_key = os.getenv("OAI_KEY")
 
-# Define a function to handle incoming messages
 
+# Define a functions to handle incoming messages
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     await update.message.reply_text("Hello there! How goes thee?")
@@ -17,8 +19,13 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE)-> No
 async def help_command(update, context: ContextTypes.DEFAULT_TYPE)-> None:
     await update.message.reply_text("Help message")
 
-async def custom_command(update, context: ContextTypes.DEFAULT_TYPE)->None:
-    await update.message.reply_text("Hello there! How goes thee?")
+async def prompt_command(update, context: ContextTypes.DEFAULT_TYPE)->None:
+    prompt = update.message.text
+    response = openai.Completion.create(
+        model="text-davinci-003", prompt=prompt, temperature=1, max_tokens=200)
+    bot_response = response.choices[0].text.strip()
+    print(response)
+    await update.message.reply_text(bot_response)
 
 def handle_response(text: str) -> str:
     if 'hello' in text:
@@ -54,7 +61,7 @@ if __name__ == '__main__':
     # Commands
     dp.add_handler(CommandHandler('start', start_command))
     dp.add_handler(CommandHandler('help', help_command))
-    dp.add_handler(CommandHandler('custom', custom_command))
+    dp.add_handler(CommandHandler('prompt', prompt_command))
 
     # Messages
     dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
